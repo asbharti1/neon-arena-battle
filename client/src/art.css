@@ -1,0 +1,1 @@
+.menu-shell:after{content:"";position:absolute;z-index:-1;top:84px;right:-6%;width:min(68vw,990px);height:430px;background:url('/assets/neon-arena-menu.webp') center/cover no-repeat;opacity:.24;mask-image:linear-gradient(90deg,transparent 0%,#000 24%,#000 78%,transparent 100%);pointer-events:none}

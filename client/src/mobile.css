@@ -1,0 +1,24 @@
+/* A narrow viewport and a coarse pointer both get touch controls, including landscape phones. */
+@media (pointer:coarse){
+  .mobile-controls{position:absolute;z-index:4;left:0;right:0;bottom:20px;display:flex;justify-content:space-between;align-items:flex-end;padding:0 18px;pointer-events:none}
+  .touch-stick,.touch-actions{pointer-events:auto}
+  .combat-tip{display:none}
+}
+@media (max-width:680px){
+  .bottom-hud{top:260px;bottom:auto;left:12px}
+  .mobile-controls{bottom:18px}
+  .health-panel{width:170px}
+}
+@media (max-height:500px) and (pointer:coarse){
+  .game-topbar{height:48px}
+  .scoreboard{top:54px;width:168px;padding:7px 9px}
+  .pilot-score{padding:5px 0}
+  .match-clock{top:53px}
+  .bottom-hud{top:auto;bottom:10px;left:195px}
+  .health-panel{width:168px}
+  .mobile-controls{bottom:9px;padding:0 14px}
+  .touch-stick{width:88px;height:88px}
+  .touch-stick i{width:34px;height:34px;margin:-17px}
+  .dodge-button{width:46px;height:46px}
+  .fire-button{width:63px;height:63px}
+}
