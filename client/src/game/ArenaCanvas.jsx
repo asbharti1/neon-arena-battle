@@ -16,42 +16,44 @@ export default function ArenaCanvas({ state, selfId, inputRef }) {
     if (!element) return undefined;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x090e1c);
-    scene.fog = new THREE.Fog(0x090e1c, 36, 85);
+    scene.background = new THREE.Color(0x060b17);
+    scene.fog = new THREE.Fog(0x060b17, 34, 90);
 
-    // Closer camera for high readability & action feel
-    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 150);
-    camera.position.set(0, 18, 20);
-    camera.lookAt(0, 0.5, 0);
+    // Dynamic cinematic camera angle showing both ground action and the epic cyber skyline
+    const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 150);
+    camera.position.set(0, 17, 21);
+    camera.lookAt(0, 0.6, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
     element.appendChild(renderer.domElement);
 
-    createArena(scene);
+    const { animatedObjects } = createArena(scene);
 
     const actors = new Map();
     const shots = new Map();
 
-    // Aim Laser Line & Target Reticle for local player
-    const aimPoints = [new THREE.Vector3(0, 0.15, 0), new THREE.Vector3(0, 0.15, -7)];
+    // Aim Laser Guideline & Target Reticle
+    const aimPoints = [new THREE.Vector3(0, 0.15, 0), new THREE.Vector3(0, 0.15, -7.5)];
     const aimGeo = new THREE.BufferGeometry().setFromPoints(aimPoints);
     const aimMat = new THREE.LineDashedMaterial({
       color: 0x00f5ff,
-      dashSize: 0.4,
-      gapSize: 0.25,
+      dashSize: 0.45,
+      gapSize: 0.2,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.9,
       linewidth: 2
     });
     const aimLine = new THREE.Line(aimGeo, aimMat);
     aimLine.computeLineDistances();
     scene.add(aimLine);
 
-    // Aim target reticle ring on floor
-    const reticleMat = new THREE.MeshBasicMaterial({ color: 0x00f5ff, transparent: true, opacity: 0.8 });
-    const reticleRing = new THREE.Mesh(new THREE.RingGeometry(0.35, 0.45, 24), reticleMat);
+    // Aim Reticle on floor
+    const reticleMat = new THREE.MeshBasicMaterial({ color: 0x00f5ff, transparent: true, opacity: 0.85 });
+    const reticleRing = new THREE.Mesh(new THREE.RingGeometry(0.38, 0.48, 28), reticleMat);
     reticleRing.rotation.x = -Math.PI / 2;
     reticleRing.position.y = 0.12;
     scene.add(reticleRing);
@@ -109,6 +111,13 @@ export default function ArenaCanvas({ state, selfId, inputRef }) {
       frame = requestAnimationFrame(draw);
       time += 0.016;
 
+      // Animate arena background elements (sky ring, sky beam, embers, floating monoliths)
+      if (animatedObjects) {
+        for (const obj of animatedObjects) {
+          obj.update(time, 0.016);
+        }
+      }
+
       const current = latest.current;
       const roster = current.state?.players || [];
       const keep = new Set(roster.map((p) => p.id));
@@ -129,26 +138,35 @@ export default function ArenaCanvas({ state, selfId, inputRef }) {
         actor.group.rotation.y = Math.atan2(player.aimX || 0, player.aimZ || -1);
         actor.group.visible = player.alive;
 
+        // Animate cyber warrior scarf and blade idle
+        if (actor.scarf) {
+          actor.scarf.rotation.y = Math.sin(time * 5 + index) * 0.18;
+          actor.scarf.rotation.z = Math.cos(time * 4 + index) * 0.1;
+        }
+        if (actor.swordGroup) {
+          actor.swordGroup.rotation.x = Math.sin(time * 3 + index) * 0.08;
+        }
+
         // Visual highlights
-        actor.core.material.emissiveIntensity = isSelf ? 2.8 : 1.8;
-        actor.ring.rotation.z = time * (isSelf ? 1.2 : -0.8);
+        actor.core.material.emissiveIntensity = isSelf ? 2.9 : 1.8;
+        actor.ring.rotation.z = time * (isSelf ? 1.3 : -0.8);
         actor.shield.visible = Date.now() < (player.protectedUntil || 0);
         if (actor.shield.visible) {
-          actor.shield.rotation.y = time * 2;
+          actor.shield.rotation.y = time * 2.2;
         }
 
         // Live nameplate and health bar update
         actor.updateNameplate(player.name, isSelf, player.hp ?? 100);
       });
 
-      // Camera smoothly tracking local player
+      // Smooth camera tracking centered on local player
       if (localPlayer) {
-        const targetX = localPlayer.x * 0.45;
-        const targetZ = 20 + localPlayer.z * 0.45;
-        camera.position.x += (targetX - camera.position.x) * 0.08;
-        camera.position.y += (18 - camera.position.y) * 0.08;
-        camera.position.z += (targetZ - camera.position.z) * 0.08;
-        camera.lookAt(localPlayer.x * 0.35, 0.7, localPlayer.z * 0.35);
+        const targetX = localPlayer.x * 0.42;
+        const targetZ = 20.5 + localPlayer.z * 0.42;
+        camera.position.x += (targetX - camera.position.x) * 0.07;
+        camera.position.y += (17 - camera.position.y) * 0.07;
+        camera.position.z += (targetZ - camera.position.z) * 0.07;
+        camera.lookAt(localPlayer.x * 0.32, 0.7, localPlayer.z * 0.32);
 
         // Update Aim Laser line
         const startX = localPlayer.x;
@@ -186,7 +204,7 @@ export default function ArenaCanvas({ state, selfId, inputRef }) {
         }
       }
 
-      // Render projectiles (large bright plasma orbs)
+      // Render glowing cyber energy pulses
       const projectiles = current.state?.projectiles || [];
       const keepShots = new Set(projectiles.map((p) => p.id));
 
@@ -202,17 +220,17 @@ export default function ArenaCanvas({ state, selfId, inputRef }) {
           );
           shotGroup.add(core);
 
-          // Glowing electric cyan outer shell
+          // Glowing energy halo
           const halo = new THREE.Mesh(
-            new THREE.SphereGeometry(0.55, 10, 8),
-            new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.75 })
+            new THREE.SphereGeometry(0.58, 10, 8),
+            new THREE.MeshBasicMaterial({ color: 0x00f5ff, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending })
           );
           shotGroup.add(halo);
 
-          // Floor shadow / glow ring
+          // Ground glow disc
           const shadow = new THREE.Mesh(
-            new THREE.CircleGeometry(0.45, 16),
-            new THREE.MeshBasicMaterial({ color: 0x00f5ff, transparent: true, opacity: 0.4 })
+            new THREE.CircleGeometry(0.5, 16),
+            new THREE.MeshBasicMaterial({ color: 0x00f5ff, transparent: true, opacity: 0.45 })
           );
           shadow.rotation.x = -Math.PI / 2;
           shadow.position.y = -0.7;
