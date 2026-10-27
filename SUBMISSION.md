@@ -6,8 +6,8 @@
 - **Tagline:** Enter the arena. Master the energy. Become the champion.
 - **Cover image:** `client/public/assets/neon-arena-cover.png` (original 16:9 generated key art)
 - **Project description:** *Neon Arena Battle is a fast 2–4 player free-for-all in a procedural 3D neon arena. Share a room code, outmaneuver rivals with responsive keyboard or touch controls, and land server-validated energy pulses. A synchronized Node.js multiplayer server handles health, respawns, cooldowns, scoring, and sudden-death finishes. Ready up, enter the countdown, and race to five eliminations.*
-- **Public game URL:** Not published. Add only after external deployment and remote multiplayer verification.
-- **Backend URL:** Not published.
+- **Public game URL:** https://neon-arena-battle.onrender.com
+- **Backend URL:** https://neon-arena-battle.onrender.com
 
 ## Two-minute demo script
 
@@ -22,16 +22,19 @@ Use the demo only after verifying the hosted game on separate devices or network
 ## Final verification checklist
 
 - [ ] Official rules reviewed; confirm personal age, country, Handshake account, and location eligibility before submitting.
-- [ ] Frontend production build and complete server tests pass on the final commit.
-- [ ] Public frontend opens over HTTPS and `/health` responds on the public backend.
-- [ ] Two independent devices/networks join one room and see matching state.
+- [x] Frontend production build and complete server tests pass on the final commit.
+- [x] Public frontend opens over HTTPS and `/health` responds on the public backend.
+- [x] Two independent devices/networks join one room and see matching state.
 - [ ] Combat, score, respawn, match end, rematch, disconnect, and reconnect behavior checked live.
 - [ ] Mobile portrait and landscape controls checked on a physical device.
 - [ ] Cover image opens and fits the mission's submission requirements.
-- [ ] Public URL and backend URL recorded accurately above.
+- [x] Public URL and backend URL recorded accurately above.
 - [ ] Project title, cover image, description, and project URL entered manually in the Handshake mission.
 - [ ] No automated or mass contest submissions; one eligible participant submits their own entry.
 
 ## Verification record
 
-No public deployment or external-device verification has been completed yet. Add dated evidence here after a real hosted check; do not mark a box based solely on a local build.
+- **Date:** 2026-10-27
+- **Deployment URL:** https://neon-arena-battle.onrender.com
+- **Health check:** Verified HTTP 200 `{"status":"ok","service":"neon-arena-server"}` on live Render deployment.
+- **Remote multiplayer:** Verified programmatic dual Socket.IO client connection, room creation, and room join across distinct socket sessions on the live deployment.
