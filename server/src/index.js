@@ -17,7 +17,7 @@ export function createGameServer({ port = Number(process.env.PORT) || 3001, orig
     if (!requestOrigin || allowedOrigins.has(requestOrigin)) return true;
     const forwardedProto = req.headers['x-forwarded-proto']?.split(',')[0]?.trim();
     const protocol = forwardedProto || req.protocol || (req.socket?.encrypted ? 'https' : 'http');
-    const host = req.headers['x-forwarded-host']?.split(',')[0]?.trim() || req.headers.host;
+    const host = req.headers.host;
     return Boolean(host && requestOrigin === `${protocol}://${host}`);
   };
   app.use(cors({ origin: true, credentials: false }));
