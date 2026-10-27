@@ -1,4 +1,5 @@
 import http from 'node:http';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import express from 'express';
@@ -12,10 +13,22 @@ import { dodge, fire, resetForRematch } from './combat.js';
 export function createGameServer({ port = Number(process.env.PORT) || 3001, origin = process.env.CLIENT_ORIGIN || 'http://localhost:5173', logger = console, startLoop = true } = {}) {
   const app = express();
   const allowedOrigins = new Set(origin.split(',').map((entry) => entry.trim()));
-  app.use(cors({ origin: [...allowedOrigins], credentials: false }));
+  const isOriginAllowed = (requestOrigin, req) => {
+    if (!requestOrigin || allowedOrigins.has(requestOrigin)) return true;
+    const forwardedProto = req.headers['x-forwarded-proto']?.split(',')[0]?.trim();
+    const protocol = forwardedProto || req.protocol || (req.socket?.encrypted ? 'https' : 'http');
+    const host = req.headers['x-forwarded-host']?.split(',')[0]?.trim() || req.headers.host;
+    return Boolean(host && requestOrigin === `${protocol}://${host}`);
+  };
+  app.use(cors({ origin: true, credentials: false }));
   app.get('/health', (_req, res) => res.json({ status: 'ok', service: 'neon-arena-server' }));
+  const clientDist = fileURLToPath(new URL('../../client/dist/', import.meta.url));
+  if (existsSync(clientDist)) {
+    app.use(express.static(clientDist));
+    app.use((req, res, next) => req.method === 'GET' && req.accepts('html') ? res.sendFile(resolve(clientDist, 'index.html')) : next());
+  }
   const server = http.createServer(app);
-  const io = new Server(server, { cors: { origin: [...allowedOrigins], methods: ['GET', 'POST'] }, allowRequest: (req, callback) => { const requestOrigin = req.headers.origin; callback(null, !requestOrigin || allowedOrigins.has(requestOrigin)); }, pingInterval: 10000, pingTimeout: 20000, maxHttpBufferSize: 1e5 });
+  const io = new Server(server, { cors: { origin: true, methods: ['GET', 'POST'] }, allowRequest: (req, callback) => callback(null, isOriginAllowed(req.headers.origin, req)), pingInterval: 10000, pingTimeout: 20000, maxHttpBufferSize: 1e5 });
   const manager = new RoomManager();
   const stopLoop = startLoop ? startGameLoop(manager, io) : () => {};
   const emitRoom = (room) => { if (room) io.to(room.code).emit('room:update', manager.publicRoom(room)); };

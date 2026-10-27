@@ -52,4 +52,4 @@ The 3D avatars and arena are generated from original procedural geometry; there 
 
 ## Current publication status
 
-The project has not been published yet. A reachable site requires a persistent Node process with WebSocket support, a static frontend host, and environment values that point the two together. Follow `DEPLOYMENT.md`; record the verified public URL in `SUBMISSION.md` only after checking the site and a remote multiplayer session.
+The project has not been published yet. A single Node web service can host both the production frontend and authoritative WebSocket server; `render.yaml` and `DEPLOYMENT.md` describe the demo deployment. Record a public URL in `SUBMISSION.md` only after checking the site and a remote multiplayer session.
