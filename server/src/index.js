@@ -66,6 +66,19 @@ export function createGameServer({ port = Number(process.env.PORT) || 3001, orig
       if (!updated) return failure(ack, 'Ready status is unavailable now.');
       success(ack, { room: updated }); emitRoom(room);
     });
+    socket.on('room:add-bot', (_data, ack) => {
+      if (!allowSensitive('room:add-bot')) return failure(ack, 'Too many requests.');
+      const result = manager.addBot(socket.id);
+      if (result.error) return failure(ack, result.error);
+      success(ack, result); emitRoom(manager.roomFor(socket.id));
+    });
+    socket.on('room:remove-bot', (data, ack) => {
+      if (!allowSensitive('room:remove-bot')) return failure(ack, 'Too many requests.');
+      const { botId } = asRecord(data);
+      const result = manager.removeBot(socket.id, botId);
+      if (result.error) return failure(ack, result.error);
+      success(ack, result); emitRoom(manager.roomFor(socket.id));
+    });
     socket.on('room:start', (_data, ack) => {
       if (!allowSensitive('room:start')) return failure(ack, 'Too many requests.');
       const result = manager.start(socket.id);

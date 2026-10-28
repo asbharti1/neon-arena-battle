@@ -45,3 +45,17 @@ test('disconnect during countdown returns a one-player room to lobby', () => {
   manager.setReady('p1', true); manager.setReady('p2', true); manager.start('p1');
   const left = manager.leave('p2'); assert.equal(left.room.phase, 'lobby'); assert.equal(left.room.players.length, 1);
 });
+
+test('host can add practice bot and start match', () => {
+  const manager = managerWithCodes('ABCDE');
+  const host = manager.create('p1', 'One');
+  const botResult = manager.addBot('p1');
+  assert.equal(botResult.room.players.length, 2);
+  const bot = botResult.room.players.find((p) => p.isBot);
+  assert.ok(bot);
+  assert.equal(bot.ready, true);
+  manager.setReady('p1', true);
+  const started = manager.start('p1');
+  assert.equal(started.error, undefined);
+  assert.equal(manager.rooms.get('ABCDE').phase, 'countdown');
+});

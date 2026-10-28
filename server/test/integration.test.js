@@ -4,7 +4,7 @@ import { io as createClient } from 'socket.io-client';
 import { createGameServer } from '../src/index.js';
 
 const connect = (url) => new Promise((resolve, reject) => {
-  const client = createClient(url, { transports: ['websocket'], reconnection: false, timeout: 3000 });
+  const client = createClient(url, { transports: ['polling', 'websocket'], reconnection: false, timeout: 3000 });
   client.once('connect', () => resolve(client)); client.once('connect_error', reject);
 });
 const once = (client, event, timeout = 2500) => new Promise((resolve, reject) => {

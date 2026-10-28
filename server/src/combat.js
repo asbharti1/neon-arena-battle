@@ -54,6 +54,62 @@ export function eliminate(room, victim, attacker, now) {
   return event;
 }
 
+export function updateBots(room, deltaMs, now) {
+  if (room.phase !== 'active') return;
+  for (const bot of room.players.values()) {
+    if (!bot.isBot || !bot.alive) continue;
+    let nearest = null;
+    let nearestDist = Infinity;
+    for (const other of room.players.values()) {
+      if (other.id === bot.id || !other.alive) continue;
+      const d = Math.hypot(other.x - bot.x, other.z - bot.z);
+      if (d < nearestDist) {
+        nearestDist = d;
+        nearest = other;
+      }
+    }
+    if (nearest) {
+      const dx = nearest.x - bot.x;
+      const dz = nearest.z - bot.z;
+      const dist = nearestDist || 1;
+      bot.aimX = dx / dist;
+      bot.aimZ = dz / dist;
+
+      let moveX = 0;
+      let moveZ = 0;
+      if (dist > 9) {
+        moveX = dx / dist;
+        moveZ = dz / dist;
+      } else if (dist < 4.5) {
+        moveX = -dx / dist;
+        moveZ = -dz / dist;
+      } else {
+        // strafe
+        moveX = -dz / dist;
+        moveZ = dx / dist;
+      }
+
+      // Check incoming shots to dodge
+      for (const shot of room.projectiles) {
+        if (shot.ownerId !== bot.id) {
+          const sDist = Math.hypot(bot.x - shot.x, bot.z - shot.z);
+          if (sDist < 4.2 && now >= bot.nextDodgeAt) {
+            dodge(bot, { x: -shot.vz, z: shot.vx }, now);
+            break;
+          }
+        }
+      }
+
+      bot.input = { x: moveX, z: moveZ };
+      if (dist <= 15 && now >= bot.nextFireAt) {
+        fire(room, bot, now);
+      }
+    } else {
+      bot.input = { x: 0, z: 0 };
+    }
+  }
+}
+
 export function stepRoom(room, deltaMs, now) {
   const events = [];
   if (room.phase === 'countdown' && now >= room.countdownEndsAt) {
@@ -63,6 +119,7 @@ export function stepRoom(room, deltaMs, now) {
     events.push({ type: 'match-start' });
   }
   if (room.phase !== 'active') return events;
+  updateBots(room, deltaMs, now);
   for (const player of room.players.values()) {
     movePlayer(player, deltaMs, now, room);
     if (!player.alive && player.respawnAt <= now) {

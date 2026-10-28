@@ -16,12 +16,12 @@ export function createArena(scene) {
   const neonCyanMat = new THREE.MeshBasicMaterial({ color: 0x00f5ff });
   const neonPurpleMat = new THREE.MeshBasicMaterial({ color: 0xa855f7 });
 
-  // Ring of towering cyber skyscrapers / monoliths in the far distance
-  const numBuildings = 28;
+  // Ring of towering cyber skyscrapers / monoliths in the distance
+  const numBuildings = 32;
   const skylineRadius = 38;
 
   for (let i = 0; i < numBuildings; i++) {
-    const angle = (i / numBuildings) * Math.PI * 2 + (Math.random() * 0.1 - 0.05);
+    const angle = (i / numBuildings) * Math.PI * 2 + (Math.random() * 0.08 - 0.04);
     const height = 18 + (i % 5) * 8 + Math.random() * 6;
     const width = 3 + (i % 3) * 1.5;
     const depth = 3 + (i % 4) * 1.2;
@@ -42,7 +42,7 @@ export function createArena(scene) {
     scene.add(strip);
   }
 
-  // Floating sci-fi monoliths / sky structures
+  // Floating sci-fi monoliths / sky spires
   for (let i = 0; i < 6; i++) {
     const angle = (i / 6) * Math.PI * 2 + 0.3;
     const dist = 28 + (i % 2) * 5;
@@ -52,7 +52,6 @@ export function createArena(scene) {
     monolith.rotation.z = Math.PI; // upside down floating spire
     scene.add(monolith);
 
-    // Glowing core in monolith
     const core = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 6, 8), neonCyanMat);
     core.position.copy(monolith.position);
     scene.add(core);
@@ -68,7 +67,6 @@ export function createArena(scene) {
   // ==========================================
   // 2. CELESTIAL SKY RING & ENERGY CONDUIT
   // ==========================================
-  // Giant segmented orbital halo hovering above
   const skyRingGroup = new THREE.Group();
   skyRingGroup.position.set(0, 24, 0);
 
@@ -90,7 +88,13 @@ export function createArena(scene) {
     const a = (i / 8) * Math.PI * 2;
     const segment = new THREE.Mesh(
       new THREE.BoxGeometry(3.5, 0.7, 0.8),
-      new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.85, roughness: 0.2, emissive: 0x38bdf8, emissiveIntensity: 0.5 })
+      new THREE.MeshStandardMaterial({
+        color: 0x1e293b,
+        metalness: 0.85,
+        roughness: 0.2,
+        emissive: 0x38bdf8,
+        emissiveIntensity: 0.5
+      })
     );
     segment.position.set(Math.cos(a) * 14.5, 0, Math.sin(a) * 14.5);
     segment.rotation.y = -a;
@@ -104,7 +108,7 @@ export function createArena(scene) {
     }
   });
 
-  // Vertical sky energy beam shooting from center to sky ring
+  // Vertical sky energy beam
   const beamGeo = new THREE.CylinderGeometry(0.55, 0.95, 26, 24, 1, true);
   const beamMat = new THREE.MeshBasicMaterial({
     color: 0x00f5ff,
@@ -116,7 +120,6 @@ export function createArena(scene) {
   beam.position.set(0, 13, 0);
   scene.add(beam);
 
-  // Inner concentrated beam core
   const beamCore = new THREE.Mesh(
     new THREE.CylinderGeometry(0.18, 0.25, 26, 16, 1, true),
     new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8, side: THREE.DoubleSide })
@@ -126,8 +129,7 @@ export function createArena(scene) {
 
   animatedObjects.push({
     update: (time) => {
-      const pulse = 0.4 + Math.sin(time * 3.5) * 0.12;
-      beamMat.opacity = pulse;
+      beamMat.opacity = 0.38 + Math.sin(time * 3.5) * 0.12;
       beam.rotation.y = -time * 0.4;
     }
   });
@@ -135,13 +137,12 @@ export function createArena(scene) {
   // ==========================================
   // 3. ARENA GROUND & CIRCUIT FLOORING
   // ==========================================
-  // Wet reflective dark metallic arena floor
   const floor = new THREE.Mesh(
     new THREE.CircleGeometry(19, 96),
     new THREE.MeshStandardMaterial({
       color: 0x080e1a,
       metalness: 0.95,
-      roughness: 0.2,
+      roughness: 0.18,
       emissive: 0x020714,
       emissiveIntensity: 0.4
     })
@@ -151,9 +152,9 @@ export function createArena(scene) {
   scene.add(floor);
 
   // Radial circuit lines branching across floor
-  for (let i = 0; i < 12; i++) {
-    const a = (i / 12) * Math.PI * 2;
-    const isMajor = i % 3 === 0;
+  for (let i = 0; i < 16; i++) {
+    const a = (i / 16) * Math.PI * 2;
+    const isMajor = i % 4 === 0;
     const lineLen = isMajor ? 17.5 : 12;
     const line = new THREE.Mesh(
       new THREE.PlaneGeometry(0.14, lineLen),
@@ -169,7 +170,7 @@ export function createArena(scene) {
     scene.add(line);
   }
 
-  // Concentric neon rings on the floor
+  // Concentric neon rings
   const ringConfigs = [
     { r: 2.5, w: 0.08, c: 0x00f5ff, op: 0.95 },
     { r: 5.5, w: 0.06, c: 0x38bdf8, op: 0.75 },
@@ -187,6 +188,27 @@ export function createArena(scene) {
     scene.add(ring);
   }
 
+  // Expanding pulsing ground wave ring
+  const pulseRingMat = new THREE.MeshBasicMaterial({
+    color: 0x00f5ff,
+    transparent: true,
+    opacity: 0.7,
+    side: THREE.DoubleSide
+  });
+  const pulseRing = new THREE.Mesh(new THREE.RingGeometry(0.8, 1.2, 64), pulseRingMat);
+  pulseRing.rotation.x = -Math.PI / 2;
+  pulseRing.position.y = 0.025;
+  scene.add(pulseRing);
+
+  animatedObjects.push({
+    update: (time) => {
+      const cycle = (time * 0.45) % 1;
+      const radius = 1 + cycle * 17.2;
+      pulseRing.scale.set(radius, radius, 1);
+      pulseRingMat.opacity = Math.max(0, 0.7 * (1 - cycle));
+    }
+  });
+
   // Center glowing energy altar
   const altar = new THREE.Mesh(
     new THREE.CylinderGeometry(2.0, 2.4, 0.4, 8),
@@ -201,9 +223,17 @@ export function createArena(scene) {
   altar.position.set(0, 0.2, 0);
   scene.add(altar);
 
-  // Outer boundary energy pylons with laser barriers
+  // Outer boundary energy pylons with laser barrier ribbon
+  const barrierMat = new THREE.MeshBasicMaterial({
+    color: 0x00f5ff,
+    transparent: true,
+    opacity: 0.28,
+    side: THREE.DoubleSide
+  });
+
   for (let i = 0; i < 16; i++) {
     const a = (i / 16) * Math.PI * 2;
+    const aNext = ((i + 1) / 16) * Math.PI * 2;
     const isKeyPylon = i % 4 === 0;
     const pylonColor = isKeyPylon ? 0xa855f7 : 0x00f5ff;
 
@@ -221,11 +251,31 @@ export function createArena(scene) {
     pylon.rotation.y = -a;
     scene.add(pylon);
 
-    // Glowing tip
-    const tip = new THREE.PointLight(pylonColor, 1.6, 6);
+    // Glowing tip light
+    const tip = new THREE.PointLight(pylonColor, 1.4, 7);
     tip.position.set(pylon.position.x, 4.6, pylon.position.z);
     scene.add(tip);
+
+    // Connecting laser wall between pylons
+    const x1 = Math.cos(a) * 18.2;
+    const z1 = Math.sin(a) * 18.2;
+    const x2 = Math.cos(aNext) * 18.2;
+    const z2 = Math.sin(aNext) * 18.2;
+    const midX = (x1 + x2) / 2;
+    const midZ = (z1 + z2) / 2;
+    const wallLen = Math.hypot(x2 - x1, z2 - z1);
+
+    const laserWall = new THREE.Mesh(new THREE.PlaneGeometry(wallLen, 2.4), barrierMat);
+    laserWall.position.set(midX, 1.5, midZ);
+    laserWall.rotation.y = -Math.atan2(z2 - z1, x2 - x1);
+    scene.add(laserWall);
   }
+
+  animatedObjects.push({
+    update: (time) => {
+      barrierMat.opacity = 0.22 + Math.sin(time * 4) * 0.08;
+    }
+  });
 
   // ==========================================
   // 4. SCI-FI COVER BARRICADES
@@ -239,8 +289,8 @@ export function createArena(scene) {
       new THREE.BoxGeometry(3.0, 1.8, 1.1),
       new THREE.MeshStandardMaterial({
         color: 0x0f172a,
-        metalness: 0.8,
-        roughness: 0.3,
+        metalness: 0.85,
+        roughness: 0.25,
         emissive: 0x0284c7,
         emissiveIntensity: 0.4
       })
@@ -274,7 +324,7 @@ export function createArena(scene) {
   // ==========================================
   // 5. FLOATING CYBER PARTICLES / EMBER DUST
   // ==========================================
-  const particleCount = 180;
+  const particleCount = 200;
   const particleGeo = new THREE.BufferGeometry();
   const particlePositions = new Float32Array(particleCount * 3);
   const particleSpeeds = new Float32Array(particleCount);
@@ -291,7 +341,7 @@ export function createArena(scene) {
 
   const particleMat = new THREE.PointsMaterial({
     color: 0x00f5ff,
-    size: 0.18,
+    size: 0.22,
     transparent: true,
     opacity: 0.75,
     blending: THREE.AdditiveBlending
@@ -300,7 +350,7 @@ export function createArena(scene) {
   scene.add(particles);
 
   animatedObjects.push({
-    update: (time, delta) => {
+    update: (_time, delta) => {
       const positions = particleGeo.attributes.position.array;
       for (let i = 0; i < particleCount; i++) {
         positions[i * 3 + 1] += particleSpeeds[i] * delta * 0.8;
@@ -315,18 +365,18 @@ export function createArena(scene) {
   // ==========================================
   // 6. CINEMATIC LIGHTING
   // ==========================================
-  const ambient = new THREE.AmbientLight(0x38bdf8, 0.9);
+  const ambient = new THREE.AmbientLight(0x38bdf8, 0.95);
   scene.add(ambient);
 
-  const keyLight = new THREE.DirectionalLight(0xdbeafe, 2.6);
+  const keyLight = new THREE.DirectionalLight(0xdbeafe, 2.8);
   keyLight.position.set(-14, 28, 14);
   scene.add(keyLight);
 
-  const rimLight = new THREE.DirectionalLight(0xa855f7, 2.0);
+  const rimLight = new THREE.DirectionalLight(0xa855f7, 2.2);
   rimLight.position.set(16, 20, -16);
   scene.add(rimLight);
 
-  const centerPillarLight = new THREE.PointLight(0x00f5ff, 3.5, 20);
+  const centerPillarLight = new THREE.PointLight(0x00f5ff, 3.8, 22);
   centerPillarLight.position.set(0, 4, 0);
   scene.add(centerPillarLight);
 

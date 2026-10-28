@@ -1,24 +1,194 @@
-/* A narrow viewport and a coarse pointer both get touch controls, including landscape phones. */
-@media (pointer:coarse){
-  .mobile-controls{position:absolute;z-index:4;left:0;right:0;bottom:20px;display:flex;justify-content:space-between;align-items:flex-end;padding:0 18px;pointer-events:none}
-  .touch-stick,.touch-actions{pointer-events:auto}
-  .combat-tip{display:none}
+/* =========================================================
+   NEON ARENA MOBILE & TOUCH VIEWPORT OPTIMIZATIONS
+   ========================================================= */
+
+/* Ensure canvas and shell never bounce, scroll, or trigger gesture zooming */
+html, body, #root, .game-shell, .arena-canvas {
+  touch-action: none !important;
+  -webkit-touch-callout: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  overscroll-behavior: none !important;
 }
-@media (max-width:680px){
-  .bottom-hud{top:260px;bottom:auto;left:12px}
-  .mobile-controls{bottom:18px}
-  .health-panel{width:170px}
+
+/* Touch controls active for touch screens OR compact mobile screens */
+@media (pointer: coarse), (max-width: 768px) {
+  .mobile-controls {
+    position: absolute;
+    z-index: 10;
+    left: 0;
+    right: 0;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    display: flex !important;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 16px;
+    pointer-events: none;
+  }
+
+  .touch-stick, .touch-actions {
+    pointer-events: auto !important;
+  }
+
+  .combat-tip {
+    display: none !important;
+  }
+
+  /* Fixed Bottom HUD: Safe center dock away from joystick and buttons */
+  .bottom-hud {
+    position: absolute !important;
+    top: auto !important;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    margin: 0 !important;
+    width: auto !important;
+    max-width: 150px !important;
+    z-index: 8 !important;
+    pointer-events: none !important;
+  }
+
+  .health-panel {
+    width: 136px !important;
+    padding: 6px 10px !important;
+    background: rgba(10, 16, 30, 0.92) !important;
+    border-radius: 4px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6) !important;
+  }
+
+  .health-caption {
+    font-size: 8px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .health-caption b {
+    font-size: 9px !important;
+  }
+
+  .health-track {
+    height: 6px !important;
+    border-radius: 3px !important;
+  }
+
+  .health-track i {
+    border-radius: 3px !important;
+  }
 }
-@media (max-height:500px) and (pointer:coarse){
-  .game-topbar{height:48px}
-  .scoreboard{top:54px;width:168px;padding:7px 9px}
-  .pilot-score{padding:5px 0}
-  .match-clock{top:53px}
-  .bottom-hud{top:auto;bottom:10px;left:195px}
-  .health-panel{width:168px}
-  .mobile-controls{bottom:9px;padding:0 14px}
-  .touch-stick{width:88px;height:88px}
-  .touch-stick i{width:34px;height:34px;margin:-17px}
-  .dodge-button{width:46px;height:46px}
-  .fire-button{width:63px;height:63px}
+
+/* Landscape mobile phone adjustments */
+@media (max-height: 520px) {
+  .game-topbar {
+    height: 46px !important;
+    padding: 0 12px !important;
+  }
+
+  .brand {
+    font-size: 11px !important;
+  }
+
+  .scoreboard {
+    top: 50px !important;
+    left: 10px !important;
+    width: 150px !important;
+    padding: 6px 8px !important;
+  }
+
+  .pilot-score {
+    padding: 3px 0 !important;
+  }
+
+  .match-clock {
+    top: 48px !important;
+    right: 10px !important;
+  }
+
+  .match-clock b {
+    font-size: 19px !important;
+  }
+
+  .bottom-hud {
+    bottom: 8px !important;
+  }
+
+  .mobile-controls {
+    bottom: 8px !important;
+    padding: 0 12px !important;
+  }
+
+  .touch-stick {
+    width: 90px !important;
+    height: 90px !important;
+  }
+
+  .touch-stick i {
+    width: 34px !important;
+    height: 34px !important;
+    margin: -17px !important;
+  }
+
+  .dodge-button {
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 8px !important;
+  }
+
+  .fire-button {
+    width: 66px !important;
+    height: 66px !important;
+    font-size: 9px !important;
+  }
+
+  .lobby-panel, .results-card {
+    top: 52% !important;
+    max-height: 90vh !important;
+    padding: 14px 20px !important;
+    overflow-y: auto !important;
+  }
+
+  .lobby-panel h1 {
+    font-size: 24px !important;
+  }
+
+  .results-card h1 {
+    font-size: 28px !important;
+  }
+}
+
+/* Portrait mobile phone layout */
+@media (max-width: 480px) {
+  .scoreboard {
+    top: 66px;
+    left: 10px;
+    width: 140px;
+    padding: 8px;
+  }
+
+  .match-clock {
+    top: 66px;
+    right: 10px;
+  }
+
+  .touch-stick {
+    width: 96px;
+    height: 96px;
+  }
+
+  .dodge-button {
+    width: 48px;
+    height: 48px;
+  }
+
+  .fire-button {
+    width: 68px;
+    height: 68px;
+  }
+
+  .lobby-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .ready-button, .start-button, .add-bot-button {
+    width: 100% !important;
+  }
 }

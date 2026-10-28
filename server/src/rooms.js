@@ -41,11 +41,37 @@ export class RoomManager {
     return { room: this.publicRoom(room), playerId: socketId };
   }
 
-  _addPlayer(room, id, name) {
+  _addPlayer(room, id, name, isBot = false) {
     const idx = room.players.size;
     const angle = (Math.PI * 2 * idx) / CONFIG.maxPlayers;
-    room.players.set(id, { id, name, x: Math.cos(angle) * 9, z: Math.sin(angle) * 9, aimX: 0, aimZ: -1, hp: CONFIG.maxHealth, score: 0, ready: false, alive: true, respawnAt: null, protectedUntil: 0, nextFireAt: 0, nextDodgeAt: 0, dodgeUntil: 0, dodgeX: 0, dodgeZ: 0, input: { x: 0, z: 0 }, lastInputAt: 0, kills: 0, deaths: 0 });
+    room.players.set(id, { id, name, isBot: Boolean(isBot), x: Math.cos(angle) * 9, z: Math.sin(angle) * 9, aimX: 0, aimZ: -1, hp: CONFIG.maxHealth, score: 0, ready: Boolean(isBot), alive: true, respawnAt: null, protectedUntil: 0, nextFireAt: 0, nextDodgeAt: 0, dodgeUntil: 0, dodgeX: 0, dodgeZ: 0, input: { x: 0, z: 0 }, lastInputAt: 0, kills: 0, deaths: 0 });
     this.playerRooms.set(id, room.code);
+  }
+
+  addBot(hostId) {
+    const room = this.roomFor(hostId);
+    if (!room) return { error: 'Room not found.' };
+    if (room.hostId !== hostId) return { error: 'Only the host can add bots.' };
+    if (room.phase !== 'lobby') return { error: 'Bots can only be added in the lobby.' };
+    if (room.players.size >= CONFIG.maxPlayers) return { error: 'Room is full (4 players max).' };
+    const botNames = ['NEXUS-AI', 'CYBER-BOT', 'VAPOR-99', 'APEX-UNIT'];
+    const usedNames = new Set([...room.players.values()].map((p) => p.name));
+    const name = botNames.find((n) => !usedNames.has(n)) || `BOT-${room.players.size + 1}`;
+    const botId = `bot_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    this._addPlayer(room, botId, name, true);
+    return { room: this.publicRoom(room) };
+  }
+
+  removeBot(hostId, botId) {
+    const room = this.roomFor(hostId);
+    if (!room) return { error: 'Room not found.' };
+    if (room.hostId !== hostId) return { error: 'Only the host can remove bots.' };
+    if (room.phase !== 'lobby') return { error: 'Bots can only be removed in the lobby.' };
+    const bot = room.players.get(botId);
+    if (!bot || !bot.isBot) return { error: 'Bot not found.' };
+    room.players.delete(botId);
+    this.playerRooms.delete(botId);
+    return { room: this.publicRoom(room) };
   }
 
   setReady(id, ready) {
@@ -90,6 +116,6 @@ export class RoomManager {
   }
 
   publicRoom(room) {
-    return { code: room.code, hostId: room.hostId, phase: room.phase, countdownEndsAt: room.countdownEndsAt, endsAt: room.endsAt, suddenDeath: room.suddenDeath, winnerId: room.winnerId, players: [...room.players.values()].map(({ id, name, ready, score, hp, alive, x, z, aimX, aimZ, protectedUntil, kills, deaths }) => ({ id, name, ready, score, hp, alive, x, z, aimX, aimZ, protectedUntil, kills, deaths })) };
+    return { code: room.code, hostId: room.hostId, phase: room.phase, countdownEndsAt: room.countdownEndsAt, endsAt: room.endsAt, suddenDeath: room.suddenDeath, winnerId: room.winnerId, players: [...room.players.values()].map(({ id, name, isBot, ready, score, hp, alive, x, z, aimX, aimZ, protectedUntil, kills, deaths }) => ({ id, name, isBot: Boolean(isBot), ready, score, hp, alive, x, z, aimX, aimZ, protectedUntil, kills, deaths })) };
   }
 }
